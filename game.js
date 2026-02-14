@@ -24,14 +24,14 @@ const SCALE = 2;
 // ============================================
 class Card {
   constructor(suit, rank) {
-    this.suit = suit; // 'hearts', 'diamonds', 'clubs', 'spades'
-    this.rank = rank; // 1-13 (A, 2-10, J, Q, K)
+    this.suit = suit;
+    this.rank = rank;
     this.faceUp = false;
   }
   
   get value() {
-    if (this.rank === 1) return 11; // Ace
-    if (this.rank > 10) return 10; // J, Q, K
+    if (this.rank === 1) return 11;
+    if (this.rank > 10) return 10;
     return this.rank;
   }
   
@@ -89,7 +89,7 @@ class Deck {
 class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MainScene' });
-    this.gameState = 'explore'; // explore, casino, blackjack
+    this.gameState = 'explore';
     this.player = null;
     this.cursors = null;
     this.deck = new Deck();
@@ -102,60 +102,26 @@ class MainScene extends Phaser.Scene {
     this.canAct = false;
     this.message = '';
     this.lastInput = 0;
+    this.touchKeys = { up: false, down: false, left: false, right: false, z: false, x: false };
   }
   
-  preload() {
-    // Generate simple colored rectangle textures
-    this.createSimpleTextures();
-  }
-  
-  createSimpleTextures() {
-    // Create simple colored 1x1 pixel textures for each color
-    const colors = {
-      'player': 0xc9a227,
-      'grass': 0x3d6b3d,
-      'floor': 0x8b7355,
-      'wall': 0x5c4033,
-      'table': 0x4a1c6b,
-      'cardBack': 0x1a1a6b,
-      'dealer': 0x1a1a2e,
-      'door': 0x5c4033,
-      'sign': 0xc9a227,
-    };
-    
-    for (const [name, color] of Object.entries(colors)) {
-      const gfx = this.make.graphics({ x: 0, y: 0, add: false });
-      gfx.fillStyle(color);
-      gfx.fillRect(0, 0, 16, 16);
-      gfx.generateTexture(name, 16, 16);
-    }
-  }
+  preload() {}
   
   create() {
-    // Setup
     this.cameras.main.setBackgroundColor(0x1a1a2e);
     
-    // Touch input simulation
-    this.touchKeys = { up: false, down: false, left: false, right: false, z: false, x: false };
-    
-    // Poll touch inputs each frame
-    this.time.addEvent({ delay: 50, callback: this.pollTouchInput, callbackScope: this, loop: true });
-    
-    // Touch button handlers
-    if (typeof window !== 'undefined') {
-      window.touchUp = () => { this.touchKeys.up = true; };
-      window.touchDown = () => { this.touchKeys.down = true; };
-      window.touchLeft = () => { this.touchKeys.left = true; };
-      window.touchRight = () => { this.touchKeys.right = true; };
-      window.touchZ = () => { 
-        this.touchKeys.z = true; 
-        this.input.keyboard.emit('keydown-Z');
-      };
-      window.touchX = () => { 
-        this.touchKeys.x = true; 
-        this.input.keyboard.emit('keydown-X');
-      };
-    }
+    // Create simple 1x1 colored textures
+    this.createSimpleTexture('gold', 0xc9a227);
+    this.createSimpleTexture('grass', 0x3d6b3d);
+    this.createSimpleTexture('floor', 0x8b7355);
+    this.createSimpleTexture('wall', 0x5c4033);
+    this.createSimpleTexture('purple', 0x4a1c6b);
+    this.createSimpleTexture('cardBack', 0x1a1a6b);
+    this.createSimpleTexture('dark', 0x1a1a2e);
+    this.createSimpleTexture('felt', 0x0a4a0a);
+    this.createSimpleTexture('cream', 0xf5e6c8);
+    this.createSimpleTexture('red', 0xc41e3a);
+    this.createSimpleTexture('white', 0xffffff);
     
     if (this.gameState === 'explore') {
       this.createOverworld();
@@ -164,65 +130,71 @@ class MainScene extends Phaser.Scene {
     } else if (this.gameState === 'blackjack') {
       this.createBlackjack();
     }
+    
+    // Touch input polling
+    this.time.addEvent({ delay: 50, callback: this.pollTouchInput, callbackScope: this, loop: true });
+  }
+  
+  createSimpleTexture(name, color) {
+    const gfx = this.make.graphics({ x: 0, y: 0, add: false });
+    gfx.fillStyle(color);
+    gfx.fillRect(0, 0, 8, 8);
+    gfx.generateTexture(name, 8, 8);
+  }
+  
+  pollTouchInput() {
+    if (this.cursors && window.touchKeys) {
+      if (window.touchKeys.up) this.cursors.up.isDown = true;
+      if (window.touchKeys.down) this.cursors.down.isDown = true;
+      if (window.touchKeys.left) this.cursors.left.isDown = true;
+      if (window.touchKeys.right) this.cursors.right.isDown = true;
+    }
   }
   
   createOverworld() {
-    // Ground
+    // Ground - green grass tiles
     for (let x = 0; x < 30; x++) {
       for (let y = 0; y < 20; y++) {
-        this.add.image(x * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'grass').setScale(SCALE);
+        this.add.image(x * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'grass').setScale(SCALE * 2);
       }
     }
     
-    // Casino building (center)
+    // Casino building - purple walls
     for (let x = 10; x < 18; x++) {
       for (let y = 6; y < 12; y++) {
         const tx = x * TILE_SIZE * SCALE;
         const ty = y * TILE_SIZE * SCALE;
         if (y === 11) {
-          this.add.image(tx, ty, 'floor').setScale(SCALE);
+          this.add.image(tx, ty, 'floor').setScale(SCALE * 2);
         } else {
-          this.add.image(tx, ty, 'wall').setScale(SCALE);
+          this.add.image(tx, ty, 'purple').setScale(SCALE * 2);
         }
       }
     }
     
-    // Door
-    this.add.image(13 * TILE_SIZE * SCALE, 11 * TILE_SIZE * SCALE, 'door').setScale(SCALE);
+    // Door - brown rectangle
+    const door = this.add.rectangle(13 * TILE_SIZE * SCALE + 16, 11 * TILE_SIZE * SCALE, 32, 48, 0x5c4033);
+    door.setStrokeStyle(2, 0xc9a227);
     
     // Sign
-    this.add.image(14 * TILE_SIZE * SCALE, 4 * TILE_SIZE * SCALE, 'sign').setScale(SCALE);
+    const sign = this.add.rectangle(14 * TILE_SIZE * SCALE + 16, 4 * TILE_SIZE * SCALE, 64, 32, 0x5c4033);
+    sign.setStrokeStyle(2, 0xc9a227);
     
-    // Sign text
-    const signText = this.add.text(14 * TILE_SIZE * SCALE, 3.5 * TILE_SIZE * SCALE, 'ALEA', {
+    this.add.text(14 * TILE_SIZE * SCALE - 20, 4 * TILE_SIZE * SCALE - 8, 'ALEA', {
       fontFamily: 'Press Start 2P',
-      fontSize: '8px',
+      fontSize: '10px',
       color: '#c9a227',
-    }).setOrigin(0.5);
+    });
     
-    // Decorations - trees
-    for (let i = 0; i < 5; i++) {
-      const tx = Phaser.Math.Between(1, 5) * TILE_SIZE * SCALE;
-      const ty = Phaser.Math.Between(1, 5) * TILE_SIZE * SCALE;
-      if (tx > 8 * TILE_SIZE * SCALE && ty < 8 * TILE_SIZE * SCALE) continue;
-      this.add.rectangle(tx, ty, 16 * SCALE, 24 * SCALE, 0x2d5a2d).setOrigin(0.5, 1);
-    }
+    // Player - gold square
+    this.player = this.add.rectangle(14 * TILE_SIZE * SCALE + 16, 14 * TILE_SIZE * SCALE, 24, 24, 0xc9a227);
+    this.physics.add.existing(this.player);
+    this.player.body.setCollideWorldBounds(true);
     
-    // Player
-    this.player = this.physics.add.sprite(14 * TILE_SIZE * SCALE, 14 * TILE_SIZE * SCALE, 'player');
-    this.player.setScale(SCALE);
-    this.player.setCollideWorldBounds(true);
-    
-    // Colliders
-    // Casino walls
-    this.physics.add.existing(this.add.rectangle(14 * 16 * SCALE, 9 * 16 * SCALE, 8 * 16 * SCALE, 2 * 16 * SCALE, 0x000000, 0));
-    
-    // Controls
     this.cursors = this.input.keyboard.createCursorKeys();
     this.input.keyboard.on('keydown-Z', this.interact, this);
     this.input.keyboard.on('keydown-ENTER', this.interact, this);
     
-    // UI
     this.add.text(8, 8, 'ARROWS: Move  Z: Enter', {
       fontFamily: 'Press Start 2P',
       fontSize: '8px',
@@ -231,60 +203,61 @@ class MainScene extends Phaser.Scene {
   }
   
   createCasino() {
-    // Floor
+    // Floor - brown tiles
     for (let x = 0; x < 30; x++) {
       for (let y = 0; y < 20; y++) {
-        this.add.image(x * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'floor').setScale(SCALE);
+        this.add.image(x * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'floor').setScale(SCALE * 2);
       }
     }
     
     // Walls
     for (let x = 0; x < 30; x++) {
-      this.add.image(x * TILE_SIZE * SCALE, 2 * TILE_SIZE * SCALE, 'wall').setScale(SCALE);
-      this.add.image(x * TILE_SIZE * SCALE, 17 * TILE_SIZE * SCALE, 'wall').setScale(SCALE);
+      this.add.image(x * TILE_SIZE * SCALE, 2 * TILE_SIZE * SCALE, 'wall').setScale(SCALE * 2);
+      this.add.image(x * TILE_SIZE * SCALE, 17 * TILE_SIZE * SCALE, 'wall').setScale(SCALE * 2);
     }
     for (let y = 2; y < 18; y++) {
-      this.add.image(2 * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'wall').setScale(SCALE);
-      this.add.image(27 * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'wall').setScale(SCALE);
+      this.add.image(2 * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'wall').setScale(SCALE * 2);
+      this.add.image(27 * TILE_SIZE * SCALE, y * TILE_SIZE * SCALE, 'wall').setScale(SCALE * 2);
     }
     
-    // Exit door
-    this.exitDoor = this.add.rectangle(15 * 16 * SCALE, 17 * 16 * SCALE - 4, 48, 4, 0xc9a227).setOrigin(0.5);
+    // Exit zone
+    this.exitZone = this.add.rectangle(15 * 16 * SCALE, 17 * 16 * SCALE - 8, 64, 8, 0xc9a227).setOrigin(0.5);
     
-    // Blackjack table (center)
-    this.add.image(15 * TILE_SIZE * SCALE, 10 * TILE_SIZE * SCALE, 'table').setScale(SCALE * 2);
+    // Blackjack table - purple
+    const table = this.add.rectangle(15 * TILE_SIZE * SCALE + 16, 10 * TILE_SIZE * SCALE, 96, 64, 0x4a1c6b);
+    table.setStrokeStyle(4, 0xc9a227);
     
-    // Dealer
-    this.dealer = this.add.image(15 * TILE_SIZE * SCALE, 6 * TILE_SIZE * SCALE, 'dealer').setScale(SCALE * 2);
+    // Dealer - dark square
+    this.dealer = this.add.rectangle(15 * TILE_SIZE * SCALE + 16, 6 * TILE_SIZE * SCALE, 24, 24, 0x1a1a2e);
+    this.dealer.setStrokeStyle(2, 0xc9a227);
     
-    // "Play" prompt
-    this.playPrompt = this.add.text(15 * TILE_SIZE * SCALE, 14 * TILE_SIZE * SCALE, '[Z] Play Blackjack', {
+    // Play prompt
+    this.playPrompt = this.add.text(15 * TILE_SIZE * SCALE - 60, 14 * TILE_SIZE * SCALE, '[Z] Play Blackjack', {
       fontFamily: 'Press Start 2P',
       fontSize: '10px',
       color: '#c9a227',
       backgroundColor: '#1a1a2e',
       padding: { x: 8, y: 4 },
-    }).setOrigin(0.5);
+    });
     
     // Chip display
-    this.add.text(4 * SCALE, 4 * SCALE, `CHIPS: ${this.chips}`, {
+    this.add.text(8, 8, `CHIPS: ${this.chips}`, {
       fontFamily: 'Press Start 2P',
       fontSize: '8px',
       color: '#c9a227',
     });
     
     // Player
-    this.player = this.physics.add.sprite(15 * TILE_SIZE * SCALE, 14 * TILE_SIZE * SCALE, 'player');
-    this.player.setScale(SCALE);
-    this.player.setCollideWorldBounds(true);
+    this.player = this.add.rectangle(15 * TILE_SIZE * SCALE + 16, 14 * TILE_SIZE * SCALE, 24, 24, 0xc9a227);
+    this.physics.add.existing(this.player);
+    this.player.body.setCollideWorldBounds(true);
     
     this.cursors = this.input.keyboard.createCursorKeys();
     this.input.keyboard.on('keydown-Z', this.interactCasino, this);
     this.input.keyboard.on('keydown-ENTER', this.interactCasino, this);
     this.input.keyboard.on('keydown-X', this.exitCasino, this);
     
-    // Instructions
-    this.add.text(4 * SCALE, 296 * SCALE, 'Z: Interact  X: Exit', {
+    this.add.text(8, 296, 'Z: Interact  X: Exit', {
       fontFamily: 'Press Start 2P',
       fontSize: '6px',
       color: '#888',
@@ -292,29 +265,25 @@ class MainScene extends Phaser.Scene {
   }
   
   createBlackjack() {
-    // Casino background
     this.cameras.main.setBackgroundColor(0x1a1a2e);
     
     // Felt table
-    const felt = this.add.graphics();
-    felt.fillStyle(0x0a4a0a);
-    felt.fillRoundedRect(40, 40, 400, 240, 16);
-    felt.lineStyle(4, 0xc9a227);
-    felt.strokeRoundedRect(40, 40, 400, 240, 16);
+    const felt = this.add.rectangle(240, 160, 400, 240, 0x0a4a0a);
+    felt.setStrokeStyle(4, 0xc9a227);
     
-    // Dealer area
-    this.add.text(220, 50, 'DEALER', {
+    // Dealer label
+    this.add.text(200, 50, 'DEALER', {
       fontFamily: 'Press Start 2P',
       fontSize: '10px',
       color: '#c9a227',
-    }).setOrigin(0.5);
+    });
     
-    // Player area
-    this.add.text(220, 180, 'YOUR HAND', {
+    // Player label
+    this.add.text(180, 170, 'YOUR HAND', {
       fontFamily: 'Press Start 2P',
       fontSize: '10px',
       color: '#c9a227',
-    }).setOrigin(0.5);
+    });
     
     // Bet display
     this.betText = this.add.text(80, 260, `BET: ${this.bet}`, {
@@ -324,14 +293,14 @@ class MainScene extends Phaser.Scene {
     });
     
     // Chips display
-    this.chipsText = this.add.text(300, 260, `CHIPS: ${this.chips}`, {
+    this.chipsText = this.add.text(280, 260, `CHIPS: ${this.chips}`, {
       fontFamily: 'Press Start 2P',
       fontSize: '10px',
       color: '#c9a227',
     });
     
-    // Deal button (as text)
-    this.dealBtn = this.add.text(200, 250, '[Z] DEAL', {
+    // Deal button
+    this.dealBtn = this.add.text(200, 240, '[Z] DEAL', {
       fontFamily: 'Press Start 2P',
       fontSize: '12px',
       color: '#c9a227',
@@ -339,8 +308,8 @@ class MainScene extends Phaser.Scene {
       padding: { x: 8, y: 4 },
     }).setOrigin(0.5);
     
-    // Action buttons (hidden initially)
-    this.hitBtn = this.add.text(100, 250, '[Z] HIT', {
+    // Action buttons
+    this.hitBtn = this.add.text(100, 240, '[Z] HIT', {
       fontFamily: 'Press Start 2P',
       fontSize: '10px',
       color: '#228b22',
@@ -348,16 +317,15 @@ class MainScene extends Phaser.Scene {
       padding: { x: 6, y: 3 },
     }).setOrigin(0.5).setVisible(false);
     
-    this.standBtn = this.add.text(200, 250, '[X] STAND', {
+    this.standBtn = this.add.text(200, 240, '[X] STAND', {
       fontFamily: 'Press Start 2P',
-      fontSize: '10px',
       fontSize: '10px',
       color: '#c41e3a',
       backgroundColor: '#1a1a2e',
       padding: { x: 6, y: 3 },
     }).setOrigin(0.5).setVisible(false);
     
-    this.doubleBtn = this.add.text(300, 250, '[C] DOUBLE', {
+    this.doubleBtn = this.add.text(300, 240, '[C] DOUBLE', {
       fontFamily: 'Press Start 2P',
       fontSize: '10px',
       color: '#c9a227',
@@ -366,67 +334,56 @@ class MainScene extends Phaser.Scene {
     }).setOrigin(0.5).setVisible(false);
     
     // Message text
-    this.msgText = this.add.text(240, 130, '', {
+    this.msgText = this.add.text(240, 120, '', {
       fontFamily: 'Press Start 2P',
       fontSize: '12px',
       color: '#f5e6c8',
-      align: 'center',
     }).setOrigin(0.5);
     
     // Back button
-    this.backBtn = this.add.text(400, 20, '[X] Exit', {
+    this.add.text(380, 20, '[X] Exit', {
       fontFamily: 'Press Start 2P',
       fontSize: '8px',
       color: '#888',
     });
     
-    // Setup controls
+    // Controls
     this.input.keyboard.on('keydown-Z', this.actionZ, this);
     this.input.keyboard.on('keydown-X', this.actionX, this);
     this.input.keyboard.on('keydown-C', this.actionC, this);
     this.input.keyboard.on('keydown-ENTER', this.actionZ, this);
     
-    // Initial state
     this.dealState = true;
     this.drawCards();
   }
   
   drawCards() {
-    // Clear existing card sprites
-    if (this.cardSprites) {
-      this.cardSprites.destroy();
+    // Clear old cards
+    if (this.cardGroup) {
+      this.cardGroup.clear(true, true);
     }
-    this.cardSprites = this.add.group();
+    this.cardGroup = this.add.group();
     
     // Draw player cards
-    let x = 120;
+    let x = 100;
     for (let i = 0; i < this.playerHand.length; i++) {
-      const card = this.playerHand[i];
-      this.drawCard(x, 200, card, i < 2 || this.canAct);
-      x += 35;
+      this.drawCard(x, 200, this.playerHand[i], true);
+      x += 40;
     }
     
     // Draw dealer cards
-    x = 120;
+    x = 100;
     for (let i = 0; i < this.dealerHand.length; i++) {
-      const card = this.dealerHand[i];
-      if (i === 1 && !this.canAct) {
-        // Face down
-        this.add.image(x, 80, 'cardBack').setScale(SCALE);
-      } else {
-        this.drawCard(x, 80, card, true);
-      }
-      x += 35;
+      this.drawCard(x, 80, this.dealerHand[i], i === 0 || this.canAct);
+      x += 40;
     }
     
-    // Update totals
-    if (this.canAct || this.gameOver) {
-      this.add.text(300, 90, `${this.dealerTotal}`, {
-        fontFamily: 'Press Start 2P',
-        fontSize: '14px',
-        color: '#f5e6c8',
-      });
-    }
+    // Totals
+    this.add.text(300, 90, this.canAct || this.gameOver ? `${this.dealerTotal}` : '?', {
+      fontFamily: 'Press Start 2P',
+      fontSize: '14px',
+      color: '#f5e6c8',
+    });
     
     this.add.text(300, 210, `${this.playerTotal}`, {
       fontFamily: 'Press Start 2P',
@@ -436,41 +393,35 @@ class MainScene extends Phaser.Scene {
   }
   
   drawCard(x, y, card, faceUp) {
+    const bg = this.add.rectangle(x, y, 28, 40, 0xfffef0);
+    bg.setStrokeStyle(1, 0xcccccc);
+    this.cardGroup.add(bg);
+    
     if (!faceUp) {
-      this.add.image(x, y, 'cardBack').setScale(SCALE);
+      const back = this.add.rectangle(x, y, 24, 36, 0x1a1a6b);
+      back.setStrokeStyle(1, 0xc9a227);
+      this.cardGroup.add(back);
       return;
     }
     
-    // Card background
-    const bg = this.add.graphics();
-    bg.fillStyle(0xfffef0);
-    bg.fillRoundedRect(x - 10, y - 14, 20, 28, 2);
-    bg.lineStyle(1, 0xcccccc);
-    bg.strokeRoundedRect(x - 10, y - 14, 20, 28, 2);
-    
-    // Suit color
     const color = card.isRed ? '#d42020' : '#1a1a1a';
     
-    // Rank
-    this.add.text(x - 6, y - 8, card.displayRank, {
+    this.add.text(x - 8, y - 12, card.displayRank, {
       fontFamily: 'Press Start 2P',
       fontSize: '8px',
       color: color,
-    });
+    }).setOrigin(0.5);
     
-    // Suit symbol
     this.add.text(x, y + 2, card.displaySuit, {
-      fontFamily: 'Arial',
-      fontSize: '12px',
+      fontSize: '16px',
       color: color,
     }).setOrigin(0.5);
     
-    // Corner rank
-    this.add.text(x - 6, y + 6, card.displayRank, {
+    this.add.text(x - 8, y + 12, card.displayRank, {
       fontFamily: 'Press Start 2P',
       fontSize: '6px',
       color: color,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5);
   }
   
   calculateTotal(hand) {
@@ -506,14 +457,12 @@ class MainScene extends Phaser.Scene {
     this.dealState = false;
     this.gameOver = false;
     
-    // Hide deal button, show action buttons
     this.dealBtn.setVisible(false);
     this.hitBtn.setVisible(true);
     this.standBtn.setVisible(true);
     this.doubleBtn.setVisible(true);
     this.doubleBtn.setAlpha(this.chips >= this.bet ? 1 : 0.5);
     
-    // Check for blackjack
     if (this.playerTotal === 21) {
       this.dealerTurn();
     }
@@ -560,10 +509,8 @@ class MainScene extends Phaser.Scene {
     this.standBtn.setVisible(false);
     this.doubleBtn.setVisible(false);
     
-    // Reveal dealer card
     this.drawCards();
     
-    // Dealer draws
     const drawLoop = () => {
       if (this.dealerTotal < 17) {
         this.time.delayedCall(500, () => {
@@ -656,12 +603,10 @@ class MainScene extends Phaser.Scene {
   }
   
   interact() {
-    // Check if near casino door
     const px = this.player.x;
     const py = this.player.y;
     
-    if (px > 10 * 16 * SCALE && px < 18 * 16 * SCALE && 
-        py > 8 * 16 * SCALE && py < 14 * 16 * SCALE) {
+    if (px > 160 && px < 288 && py > 96 && py < 176) {
       this.gameState = 'casino';
       this.scene.restart();
     }
@@ -671,14 +616,12 @@ class MainScene extends Phaser.Scene {
     const px = this.player.x;
     const py = this.player.y;
     
-    // Check distance to table
-    const dist = Phaser.Math.Distance.Between(px, py, 15 * 16 * SCALE, 11 * 16 * SCALE);
+    const dist = Phaser.Math.Distance.Between(px, py, 15 * 16 * SCALE + 16, 11 * 16 * SCALE);
     if (dist < 80 && this.dealState) {
       this.gameState = 'blackjack';
       this.scene.restart();
     }
     
-    // Exit
     if (py > 15 * 16 * SCALE) {
       this.exitCasino();
     }
@@ -686,7 +629,7 @@ class MainScene extends Phaser.Scene {
   
   exitCasino() {
     this.gameState = 'explore';
-    this.player.x = 14 * 16 * SCALE;
+    this.player.x = 14 * 16 * SCALE + 16;
     this.player.y = 14 * 16 * SCALE;
     this.scene.restart();
   }
@@ -695,39 +638,32 @@ class MainScene extends Phaser.Scene {
     if (this.chips <= 0) {
       this.chips = 100;
       this.bet = 10;
-  }
-  
-  pollTouchInput() {
-    // Apply touch input to cursor keys
-    if (this.cursors && this.touchKeys) {
-      if (this.touchKeys.up) this.cursors.up.isDown = true;
-      if (this.touchKeys.down) this.cursors.down.isDown = true;
-      if (this.touchKeys.left) this.cursors.left.isDown = true;
-      if (this.touchKeys.right) this.cursors.right.isDown = true;
     }
+    this.gameState = 'casino';
+    this.scene.restart();
   }
   
   update() {
+    const speed = 120;
+    
     if (this.gameState === 'explore' && this.player) {
-      const speed = 120;
-      this.player.setVelocity(0);
+      this.player.body.setVelocity(0);
       
-      if (this.cursors.left.isDown) this.player.setVelocityX(-speed);
-      else if (this.cursors.right.isDown) this.player.setVelocityX(speed);
+      if (this.cursors.left.isDown) this.player.body.setVelocityX(-speed);
+      else if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
       
-      if (this.cursors.up.isDown) this.player.setVelocityY(-speed);
-      else if (this.cursors.down.isDown) this.player.setVelocityY(speed);
+      if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
+      else if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
     }
     
     if (this.gameState === 'casino' && this.player) {
-      const speed = 120;
-      this.player.setVelocity(0);
+      this.player.body.setVelocity(0);
       
-      if (this.cursors.left.isDown) this.player.setVelocityX(-speed);
-      else if (this.cursors.right.isDown) this.player.setVelocityX(speed);
+      if (this.cursors.left.isDown) this.player.body.setVelocityX(-speed);
+      else if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
       
-      if (this.cursors.up.isDown) this.player.setVelocityY(-speed);
-      else if (this.cursors.down.isDown) this.player.setVelocityY(speed);
+      if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
+      else if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
     }
   }
 }
