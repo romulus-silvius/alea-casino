@@ -203,6 +203,28 @@ class MainScene extends Phaser.Scene {
     // Setup
     this.cameras.main.setBackgroundColor(0x1a1a2e);
     
+    // Touch input simulation
+    this.touchKeys = { up: false, down: false, left: false, right: false, z: false, x: false };
+    
+    // Poll touch inputs each frame
+    this.time.addEvent({ delay: 50, callback: this.pollTouchInput, callbackScope: this, loop: true });
+    
+    // Touch button handlers
+    if (typeof window !== 'undefined') {
+      window.touchUp = () => { this.touchKeys.up = true; };
+      window.touchDown = () => { this.touchKeys.down = true; };
+      window.touchLeft = () => { this.touchKeys.left = true; };
+      window.touchRight = () => { this.touchKeys.right = true; };
+      window.touchZ = () => { 
+        this.touchKeys.z = true; 
+        this.input.keyboard.emit('keydown-Z');
+      };
+      window.touchX = () => { 
+        this.touchKeys.x = true; 
+        this.input.keyboard.emit('keydown-X');
+      };
+    }
+    
     if (this.gameState === 'explore') {
       this.createOverworld();
     } else if (this.gameState === 'casino') {
@@ -741,9 +763,16 @@ class MainScene extends Phaser.Scene {
     if (this.chips <= 0) {
       this.chips = 100;
       this.bet = 10;
+  }
+  
+  pollTouchInput() {
+    // Apply touch input to cursor keys
+    if (this.cursors && this.touchKeys) {
+      if (this.touchKeys.up) this.cursors.up.isDown = true;
+      if (this.touchKeys.down) this.cursors.down.isDown = true;
+      if (this.touchKeys.left) this.cursors.left.isDown = true;
+      if (this.touchKeys.right) this.cursors.right.isDown = true;
     }
-    this.gameState = 'casino';
-    this.scene.restart();
   }
   
   update() {
