@@ -105,98 +105,30 @@ class MainScene extends Phaser.Scene {
   }
   
   preload() {
-    // Generate pixel textures programmatically
-    this.generateTextures();
+    // Generate simple colored rectangle textures
+    this.createSimpleTextures();
   }
   
-  generateTextures() {
-    // Player sprite (16x16, scaled 2x)
-    const playerGfx = this.make.graphics({ x: 0, y: 0, add: false });
+  createSimpleTextures() {
+    // Create simple colored 1x1 pixel textures for each color
+    const colors = {
+      'player': 0xc9a227,
+      'grass': 0x3d6b3d,
+      'floor': 0x8b7355,
+      'wall': 0x5c4033,
+      'table': 0x4a1c6b,
+      'cardBack': 0x1a1a6b,
+      'dealer': 0x1a1a2e,
+      'door': 0x5c4033,
+      'sign': 0xc9a227,
+    };
     
-    // Body
-    playerGfx.fillStyle(0xc9a227); // Gold/tan
-    playerGfx.fillRect(8, 4, 8, 10);
-    // Head
-    playerGfx.fillStyle(0xf5d0a9); // Skin
-    playerGfx.fillRect(9, 0, 6, 5);
-    // Hair
-    playerGfx.fillStyle(0x4a3728); // Brown
-    playerGfx.fillRect(9, 0, 6, 2);
-    playerGfx.generateTexture('player', 16, 16);
-    
-    // Grass tile
-    const grassGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    grassGfx.fillStyle(0x3d6b3d);
-    grassGfx.fillRect(0, 0, 16, 16);
-    grassGfx.fillStyle(0x4a7c4a);
-    grassGfx.fillRect(2, 2, 2, 2);
-    grassGfx.fillRect(10, 8, 2, 2);
-    grassGfx.fillRect(6, 12, 2, 2);
-    grassGfx.generateTexture('grass', 16, 16);
-    
-    // Floor tile
-    const floorGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    floorGfx.fillStyle(0x8b7355);
-    floorGfx.fillRect(0, 0, 16, 16);
-    floorGfx.fillStyle(0x9c8465);
-    floorGfx.fillRect(0, 0, 16, 2);
-    floorGfx.fillRect(0, 14, 16, 2);
-    floorGfx.generateTexture('floor', 16, 16);
-    
-    // Wall tile
-    const wallGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    wallGfx.fillStyle(0x5c4033);
-    wallGfx.fillRect(0, 0, 16, 16);
-    wallGfx.fillStyle(0xc9a227);
-    wallGfx.fillRect(0, 14, 16, 2);
-    wallGfx.generateTexture('wall', 16, 16);
-    
-    // Table
-    const tableGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    tableGfx.fillStyle(0x4a1c6b);
-    tableGfx.fillRect(0, 0, 48, 32);
-    tableGfx.fillStyle(0xc9a227);
-    tableGfx.fillRect(0, 0, 48, 2);
-    tableGfx.fillRect(0, 30, 48, 2);
-    tableGfx.generateTexture('table', 48, 32);
-    
-    // Card back
-    const cardBack = this.make.graphics({ x: 0, y: 0, add: false });
-    cardBack.fillStyle(0x1a1a6b);
-    cardBack.fillRect(0, 0, 20, 28);
-    cardBack.fillStyle(0xc9a227);
-    cardBack.fillRect(2, 2, 16, 24);
-    cardBack.generateTexture('cardBack', 20, 28);
-    
-    // NPC (dealer)
-    const npcGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    npcGfx.fillStyle(0x1a1a2e); // Dark suit
-    npcGfx.fillRect(8, 4, 8, 10);
-    npcGfx.fillStyle(0xf5d0a9); // Skin
-    npcGfx.fillRect(9, 0, 6, 5);
-    npcGfx.fillStyle(0x1a1a1a); // Hair
-    npcGfx.fillRect(9, 0, 6, 2);
-    npcGfx.generateTexture('dealer', 16, 16);
-    
-    // Door
-    const doorGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    doorGfx.fillStyle(0x5c4033);
-    doorGfx.fillRect(0, 0, 24, 32);
-    doorGfx.fillStyle(0xc9a227);
-    doorGfx.fillRect(2, 2, 20, 28);
-    doorGfx.fillStyle(0x8b7355);
-    doorGfx.fillCircle(18, 16, 2);
-    doorGfx.generateTexture('door', 24, 32);
-    
-    // Sign
-    const signGfx = this.make.graphics({ x: 0, y: 0, add: false });
-    signGfx.fillStyle(0x5c4033);
-    signGfx.fillRect(6, 0, 4, 16);
-    signGfx.fillStyle(0xc9a227);
-    signGfx.fillRect(0, 16, 32, 16);
-    signGfx.fillStyle(0x1a1a2e);
-    signGfx.fillRect(2, 18, 28, 12);
-    signGfx.generateTexture('sign', 32, 32);
+    for (const [name, color] of Object.entries(colors)) {
+      const gfx = this.make.graphics({ x: 0, y: 0, add: false });
+      gfx.fillStyle(color);
+      gfx.fillRect(0, 0, 16, 16);
+      gfx.generateTexture(name, 16, 16);
+    }
   }
   
   create() {
